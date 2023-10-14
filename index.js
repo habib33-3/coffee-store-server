@@ -7,6 +7,9 @@ const app = express();
 
 const port = process.env.PORT || 3000;
 
+app.use(cors());
+app.use(express.json());
+
 const user = process.env.DB_USER;
 const password = process.env.DB_PASSWORD;
 
@@ -27,6 +30,7 @@ async function run() {
     await client.connect();
 
     const coffeeCollection = client.db("coffeeDB").collection("coffee");
+    const userCollection = client.db("coffeeDB").collection("user");
 
     app.get("/coffee", async (req, res) => {
       const cursor = coffeeCollection.find();
@@ -78,6 +82,14 @@ async function run() {
       res.send(result);
     });
 
+    // user Related
+    app.post("/user", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -89,9 +101,6 @@ async function run() {
   }
 }
 run().catch(console.dir);
-
-app.use(cors());
-app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("server running");
